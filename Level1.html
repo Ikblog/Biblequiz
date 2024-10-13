@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App with Timer, Pin, and Progress Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0b0c10;
+            color: #ffffff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        #quiz-container {
+            margin-top: 50px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #level {
+            font-size: 2em;
+            color: yellow;
+        }
+
+        #question-box {
+            background-color: #ffffff;
+            color: black;
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.5em;
+            height:80vh
+        }
+
+        #image-box img {
+            width: 80%;
+            height: auto;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .answer-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        .answer-box {
+            background-color: #ffffff;
+            color: black;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        .answer-box:hover {
+            background-color: #cfd8dc;
+        }
+
+        #timer {
+            font-size: 1.5em;
+            color: #FF5733;
+            margin: 20px;
+        }
+
+        #progress {
+            font-size: 1.5em;
+            color: #00FF00;
+            margin-top: 10px;
+        }
+
+        #progress-bar {
+            width: 80%;
+            height: 20px;
+            background-color: #333;
+            margin: 10px auto;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background-color: #00FF00;
+            transition: width 0.3s ease;
+        }
+
+        #congratulations {
+            font-size: 2em;
+            margin-top: 20px;
+            color: #00FF00;
+        }
+
+        #pin-code {
+            font-size: 1.5em;
+            color: #FFFF00;
+            margin-top: 10px;
+        }
+
+        #next-page-btn {
+            background-color: #00FF00;
+            color: #000;
+            font-size: 1.2em;
+            padding: 10px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 50px;
+           
+        
+        }
+
+        #next-page-btn:hover {
+            background-color: #008000;
+        }
+    </style>
+</head>
+<body>
+    <div id="quiz-container">
+        <div id="level">LEVEL ONE</div>
+        <div id="image-box">
+            <img src="" id="question-image" alt="Quiz Image">
+        </div>
+        <div id="question-box">QUESTION</div>
+        <div id="timer">Time left: <span id="time-left">30</span> seconds</div>
+        <div id="progress">Question <span id="current-question">1</span> of <span id="total-questions">5</span></div>
+        <div id="progress-bar">
+            <div id="progress-bar-fill"></div>
+        </div>
+        <div class="answer-container">
+            <div class="answer-box" onclick="checkAnswer(this)">Answer 1</div>
+            <div class="answer-box" onclick="checkAnswer(this)">Answer 2</div>
+            <div class="answer-box" onclick="checkAnswer(this)">Answer 3</div>
+            <div class="answer-box" onclick="checkAnswer(this)">Answer 4</div>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 0;
+        let score = 0;
+        let timeLeft = 30; 
+        let timer;
+        const correctPin = "1111"; 
+
+        const questions = [
+          
+{ question: "Who is the author of the Gospel of John?",
+answers: ["Matthew", "Mark", "Luke", "John"],
+correct: 3,
+},
+
+{ question: "What is Jesus' message in the Sermon on the Mount?",
+answers: ["Love your enemies", "Honor your parents", "Obey the law", "Seek riches"],
+correct: 0,
+},
+
+{ question: "Which disciple denied Jesus three times?",
+answers: ["Peter", "John", "James", "Judas"],
+correct: 0,
+ },
+
+{ question: "What is the name of the city where Jesus was born?",
+answers: ["Bethlehem", "Nazareth", "Jerusalem", "Capernaum"],
+correct: 0,
+},
+
+{ question: "Who sentenced Jesus to crucifixion?",
+answers: ["Pontius Pilate", "Herod", "Caiaphas", "Roman Senate"],
+correct: 0,
+ },
+
+
+
+
+
+           
+            // Add more questions as needed
+        ];
+
+        const totalQuestions = questions.length;
+
+        function shuffleQuestions(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        shuffleQuestions(questions);
+
+        function loadQuestion() {
+            if (currentQuestion < totalQuestions) {
+                document.getElementById('question-box').innerText = questions[currentQuestion].question;
+                document.getElementById('question-image').src = questions[currentQuestion].image || "";
+              
+                
+                let answerBoxes = document.getElementsByClassName('answer-box');
+                for (let i = 0; i < answerBoxes.length; i++) {
+                    answerBoxes[i].innerText = questions[currentQuestion].answers[i];
+                }
+
+                document.getElementById('current-question').innerText = currentQuestion + 1;
+                document.getElementById('total-questions').innerText = totalQuestions;
+
+                let progressPercentage = ((currentQuestion + 1) / totalQuestions) * 100;
+                document.getElementById('progress-bar-fill').style.width = progressPercentage + '%';
+
+                timeLeft = 30;
+                document.getElementById('time-left').innerText = timeLeft;
+                clearInterval(timer);
+                timer = setInterval(updateTimer, 1000);
+            } else {
+                displayResult();
+            }
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('time-left').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                currentQuestion++;
+                loadQuestion();
+            }
+        }
+
+        function checkAnswer(selectedAnswer) {
+            clearInterval(timer);
+            let answerBoxes = document.getElementsByClassName('answer-box');
+            let selectedIndex = Array.prototype.indexOf.call(answerBoxes, selectedAnswer);
+
+            if (selectedIndex === questions[currentQuestion].correct) {
+                score++;
+            }
+
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        function displayResult() {
+            let quizContainer = document.getElementById('quiz-container');
+            quizContainer.innerHTML = `<h2 id="congratulations">Congratulations!</h2>
+                                       <h2>You scored ${score} out of ${totalQuestions}</h2>
+                                       <p>Well done! You've completed the quiz.</p>`;
+
+            if (score >= 2) {
+                quizContainer.innerHTML += `<button id="next-page-btn" onclick="goToNextPage()">Go to Next Page</button>`;
+            }
+        }
+
+        function goToNextPage() {
+            window.location.href = "nextpage.html"; // Replace with the actual next page URL
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
