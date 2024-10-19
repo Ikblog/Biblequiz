@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App with Timer and Progress Tracking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0b0c10;
+            color: #ffffff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        #quiz-container {
+            margin-top: 50px;
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        #level {
+            font-size: 2em;
+            color: yellow;
+        }
+
+        #question-box {
+            background-color: #ffffff;
+            color: black;
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 1.5em;
+            height: 80vh;
+        }
+
+        .answer-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        .answer-box {
+            background-color: #ffffff;
+            color: black;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        .answer-box:hover {
+            background-color: #cfd8dc;
+        }
+
+        #timer {
+            font-size: 1.5em;
+            color: #FF5733;
+            margin: 20px;
+        }
+
+        #progress {
+            font-size: 1.5em;
+            color: #00FF00;
+            margin-top: 10px;
+        }
+
+        #progress-bar {
+            width: 80%;
+            height: 20px;
+            background-color: #333;
+            margin: 10px auto;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        #progress-bar-fill {
+            width: 0%;
+            height: 100%;
+            background-color: #00FF00;
+            transition: width 0.3s ease;
+        }
+
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            border-radius: 10px;
+            text-align: center;
+            color: black;
+        }
+
+        #retry-btn, #close-btn {
+            background-color: #FF5733;
+            color: #ffffff;
+            font-size: 1.2em;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        #retry-btn:hover, #close-btn:hover {
+            background-color: #e74c3c;
+        }
+
+        #congratulations {
+            font-size: 2em;
+            color: #00FF00;
+            margin-bottom: 20px;
+        }
+
+        #encouragement {
+            font-size: 1.5em;
+            color: #FF5733;
+            margin-bottom: 20px;
+        }
+
+        #score-display {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="quiz-container">
+        <div id="level">LEVEL TWO</div>
+        <div id="question-box">QUESTION</div>
+        <div id="timer">Time left: <span id="time-left">30</span> seconds</div>
+        <div id="progress">Question <span id="current-question">1</span> of <span id="total-questions">5</span></div>
+        <div id="progress-bar">
+            <div id="progress-bar-fill"></div>
+        </div>
+        <div class="answer-container">
+            <div class="answer-box" onclick="checkAnswer(this)">Answer 1</div>
+            <div class="answer-box" onclick="checkAnswer(this)">Answer 2</div>
+            <div class="answer-box" onclick="checkAnswer(this)">Answer 3</div>
+            <div class="answer-box" onclick="checkAnswer(this)">Answer 4</div>
+        </div>
+    </div>
+
+    <!-- The Modal -->
+    <div id="scoreModal" class="modal">
+        <div class="modal-content" id="modal-content">
+            <h2 id="congratulations"></h2>
+            <p id="score-display"></p>
+            <p id="encouragement"></p>
+            <button id="retry-btn" onclick="retryQuiz()">Retry Quiz</button>
+            <button id="close-btn" onclick="closeApp()">Close</button>
+        </div>
+    </div>
+
+    <script>
+        let currentQuestion = 0;
+        let score = 0;
+        let timeLeft = 30;
+        let timer;
+       const questions = [
+       
+{ question: "Who was Nigeria's first president after independence?",
+answers: ["Nnamdi Azikiwe", "Obafemi Awolowo", "Anthony Enahoro", "Abubakar Tafawa Balewa"],
+correct: 0 },
+
+{ question: "What was the name of the Nigerian empire that existed from 1300-1900?",
+answers: ["Hausa Kingdom", "Oyo Empire", "Benin Empire", "Kanem-Bornu Empire"],
+correct: 1 },
+
+{ question: "In what year did Nigeria gain independence from Britain?",
+answers: ["1955", "1960", "1963", "1970"],
+correct: 1 },
+
+{ question: "Who led Nigeria's struggle for independence?",
+answers: ["Nnamdi Azikiwe", "Obafemi Awolowo", "Anthony Enahoro", "Herbert Macaulay"],
+correct: 0 },
+
+{ question: "What is the name of Nigeria's highest peak?",
+answers: ["Chappal Waddi", "Osun Osogbo", "Kajuru Castle", "Zuma Rock"],
+correct: 0 },
+
+{ question: "Which Nigerian kingdom was known for its bronze art?",
+answers: ["Benin Kingdom", "Oyo Kingdom", "Igbo Kingdom", "Hausa Kingdom"],
+correct: 0 },
+
+{ question: "Who was the military head of state from 1983-1985?",
+answers: ["Muhammadu Buhari", "Ibrahim Babangida", "Sani Abacha", "Olusegun Obasanjo"],
+correct: 0 },
+
+{ question: "What was the name of the first Nigerian newspaper?",
+answers: ["The Nigerian Times", "The West African Pilot", "The Lagos Weekly Record", "The Daily Times"],
+correct: 1 },
+
+{ question: "In what year did the Nigerian Civil War end?",
+answers: ["1967", "1970", "1975", "1980"],
+correct: 1 },
+
+{ question: "Who was the founder of the Oyo Empire?",
+answers: ["Oranyan", "Oduduwa", "Sango", "Afonja"],
+correct: 0 },
+
+{ question: "What is the name of Nigeria's oldest university?",
+answers: ["University of Ibadan", "University of Lagos", "Obafemi Awolowo University", "Ahmadu Bello University"],
+correct: 0 },
+
+{ question: "Who was the Nigerian leader who introduced the 'Operation Feed the Nation' program?",
+answers: ["Olusegun Obasanjo", "Muhammadu Buhari", "Shehu Shagari", "Umaru Musa Yar'Adua"],
+correct: 0 },
+
+{ question: "What was the name of the Nigerian currency before the Naira?",
+answers: ["Pound", "Shilling", "Naira", "Kobo"],
+correct: 0 },
+
+{ question: "Who was the first Nigerian to win the Nobel Prize?",
+answers: ["Wole Soyinka", "Chinua Achebe", "Ben Okri", "Ngugi wa Thiong'o"],
+correct: 0 },
+
+{ question: "In what year did Nigeria become a republic?",
+answers: ["1960", "1963", "1970", "1979"],
+correct: 1 }
+            
+            
+        ];
+
+        const totalQuestions = questions.length;
+
+        function shuffleQuestions(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        shuffleQuestions(questions);
+
+        function loadQuestion() {
+            if (currentQuestion < totalQuestions) {
+                document.getElementById('question-box').innerText = questions[currentQuestion].question;
+                let answerBoxes = document.getElementsByClassName('answer-box');
+                for (let i = 0; i < answerBoxes.length; i++) {
+                    answerBoxes[i].innerText = questions[currentQuestion].answers[i];
+                }
+
+                document.getElementById('current-question').innerText = currentQuestion + 1;
+                document.getElementById('total-questions').innerText = totalQuestions;
+
+                let progressPercentage = ((currentQuestion + 1) / totalQuestions) * 100;
+                document.getElementById('progress-bar-fill').style.width = progressPercentage + '%';
+
+                timeLeft = 30;
+                document.getElementById('time-left').innerText = timeLeft;
+                clearInterval(timer);
+                timer = setInterval(updateTimer, 1000);
+            } else {
+                displayResult();
+            }
+        }
+
+        function updateTimer() {
+            timeLeft--;
+            document.getElementById('time-left').innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                currentQuestion++;
+                loadQuestion();
+            }
+        }
+
+        function checkAnswer(selectedAnswer) {
+            clearInterval(timer);
+            let answerBoxes = document.getElementsByClassName('answer-box');
+            let selectedIndex = Array.prototype.indexOf.call(answerBoxes, selectedAnswer);
+
+            if (selectedIndex === questions[currentQuestion].correct) {
+                score++;
+            }
+
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        function displayResult() {
+            let modal = document.getElementById('scoreModal');
+            let congratulations = document.getElementById('congratulations');
+            let encouragement = document.getElementById('encouragement');
+            let scoreDisplay = document.getElementById('score-display');
+            let retryBtn = document.getElementById('retry-btn');
+
+            scoreDisplay.innerText = `Your Score: ${score} / ${totalQuestions}`;
+
+            if (score < 3) {
+                congratulations.innerText = "Poor Score!";
+                encouragement.innerText = "Don't worry! You can try again. Keep learning!";
+                retryBtn.style.display = "inline-block";
+            } else {
+                congratulations.innerText = "Congratulations!";
+                encouragement.innerText = "Well done! You've completed the quiz.";
+                retryBtn.style.display = "none";
+            }
+
+            modal.style.display = "block";
+        }
+
+        function retryQuiz() {
+            score = 0;
+            currentQuestion = 0;
+            loadQuestion();
+            let modal = document.getElementById('scoreModal');
+            modal.style.display = "none";
+        }
+
+        function closeApp() {
+            window.close();  // This will attempt to close the app
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
