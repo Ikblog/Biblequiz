@@ -3,265 +3,392 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz App with Timer, Pin, and Progress Tracking</title>
+    <title>Bible Quiz</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #0b0c10;
-            color: #ffffff;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-
-        #quiz-container {
-            margin-top: 50px;
-            height: 80vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-        }
-
-        #level {
-            font-size: 2em;
-            color: yellow;
-        }
-
-        #question-box {
             background-color: #ffffff;
-            color: black;
-            width: 80%;
-            margin: 20px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+         
+            margin: 0;
+        }
+
+        .container {
+            background-color: #ffffff;
             padding: 20px;
             border-radius: 10px;
-            font-size: 1.5em;
-            height:80vh
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
         }
 
-        #image-box img {
-            width: 80%;
+        h1 {
+            color: #374151;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        img {
+            width: 100%;
             height: auto;
-            border-radius: 10px;
-            margin: 20px 0;
+            border-radius: 8px;
+            margin-bottom: 20px;
         }
 
-        .answer-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            width: 80%;
-            margin: 20px auto;
+        .question {
+            font-size: 20px;
+            color: #1f2937;
+            margin-bottom: 15px;
         }
 
-        .answer-box {
-            background-color: #ffffff;
-            color: black;
-            padding: 15px;
-            border-radius: 10px;
-            font-size: 1.2em;
-            cursor: pointer;
-        }
-
-        .answer-box:hover {
-            background-color: #cfd8dc;
-        }
-
-        #timer {
-            font-size: 1.5em;
-            color: #FF5733;
-            margin: 20px;
-        }
-
-        #progress {
-            font-size: 1.5em;
-            color: #00FF00;
-            margin-top: 10px;
-        }
-
-        #progress-bar {
-            width: 80%;
-            height: 20px;
-            background-color: #333;
-            margin: 10px auto;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        #progress-bar-fill {
-            width: 0%;
-            height: 100%;
-            background-color: #00FF00;
-            transition: width 0.3s ease;
-        }
-
-        #congratulations {
-            font-size: 2em;
-            margin-top: 20px;
-            color: #00FF00;
-        }
-
-        #pin-code {
-            font-size: 1.5em;
-            color: #FFFF00;
-            margin-top: 10px;
-        }
-
-        #next-page-btn {
-            background-color: #00FF00;
-            color: #000;
-            font-size: 1.2em;
-            padding: 10px 30px;
+        .answers button {
+            display: block;
+            width: 100%;
+            background-color: #e5e7eb;
             border: none;
-            border-radius: 5px;
+            padding: 12px;
+            font-size: 16px;
+            margin-bottom: 10px;
             cursor: pointer;
-            margin-top: 50px;
-           
-        
+            border-radius: 5px;
+            transition: background-color 0.3s;
         }
 
-        #next-page-btn:hover {
-            background-color: #008000;
+        .answers button:hover {
+            background-color: #d1d5db;
+        }
+
+        .correct {
+            background-color: #34d399; /* Green */
+        }
+
+        .incorrect {
+            background-color: #f87171; /* Red */
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 370px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .modal-content h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        button.retry, button.next-level {
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+        }
+
+        button.retry:hover, button.next-level:hover {
+            background-color: #2563eb;
+        }
+
+        button.advice {
+            background-color: #f87171;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button.advice:hover {
+            background-color: #ef4444;
         }
     </style>
 </head>
 <body>
-    <div id="quiz-container">
-        <div id="level">LEVEL ONE</div>
-        <div id="image-box">
-            <img src="" id="question-image" alt="Quiz Image">
+    <div class="container">
+        <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiWz8xNMsr-_3BJshiRvkww1YW2N4_VaHUPG-lHYlVbwIV-vQV_-lxJj_DvBTjCyobfDKrw3saFbEJBfh15sNE9V7pYD5BMLudbVnda8BoyIDrw68cOi_HNYR9HBhOvI_Be7lffciKizIVqb7LquU_Fot-LIuVSoxSgEJiRg4J1RJEX1vxWpucAcHHmV3FT/s350/ai-bible-quiz-test-your-knowledge.png/350x150" alt="Bible Quiz">
+        <h1>Bible Quiz - Level <span id="level-display">1</span></h1>
+        <div class="tracker">Question <span id="current-question">1</span> of 5</div>
+        <div class="question" id="question"></div>
+        <div class="answers" id="answers"></div>
+    </div>
+
+    <!-- Score Modal -->
+    <div id="scoreModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalMessage"></h2>
+            <p id="finalScore"></p>
+            <button id="retryBtn" class="retry">Retry</button>
+            <button id="nextLevelBtn" class="next-level hidden">Next Level</button>
+            <button id="adviceBtn" class="advice hidden">Get Advice</button>
         </div>
-        <div id="question-box">QUESTION</div>
-        <div id="timer">Time left: <span id="time-left">30</span> seconds</div>
-        <div id="progress">Question <span id="current-question">1</span> of <span id="total-questions">5</span></div>
-        <div id="progress-bar">
-            <div id="progress-bar-fill"></div>
-        </div>
-        <div class="answer-container">
-            <div class="answer-box" onclick="checkAnswer(this)">Answer 1</div>
-            <div class="answer-box" onclick="checkAnswer(this)">Answer 2</div>
-            <div class="answer-box" onclick="checkAnswer(this)">Answer 3</div>
-            <div class="answer-box" onclick="checkAnswer(this)">Answer 4</div>
+    </div>
+
+    <!-- Next Level Modal -->
+    <div id="nextLevelModal" class="modal">
+        <div class="modal-content">
+            <h2>Welcome to the Next Level!</h2>
+            <p>Get ready for more challenging questions!</p>
+            <button id="startNextLevelBtn" class="next-level">Start Next Level</button>
         </div>
     </div>
 
     <script>
-        let currentQuestion = 0;
+       const questions = [
+    {
+        question: "Who led the Israelites out of Egypt?",
+        answers: ["Moses", "Joshua", "David", "Isaiah"],
+        correct: 0
+    },
+    {
+        question: "What is the first book of the Bible?",
+        answers: ["Genesis", "Exodus", "Leviticus", "Numbers"],
+        correct: 0
+    },
+    {
+        question: "How many days did it rain during the Flood?",
+        answers: ["40", "30", "20", "10"],
+        correct: 0
+    },
+    {
+        question: "Who was swallowed by a great fish?",
+        answers: ["Daniel", "Noah", "Jonah", "Moses"],
+        correct: 2
+    },
+    {
+        question: "What is the last book of the New Testament?",
+        answers: ["Revelation", "Jude", "Hebrews", "Acts"],
+        correct: 0
+    },
+    {
+        question: "Who was the first man created by God?",
+        answers: ["Adam", "Noah", "Abraham", "Isaac"],
+        correct: 0
+    },
+    {
+        question: "Who built the ark?",
+        answers: ["Noah", "Moses", "Abraham", "Joseph"],
+        correct: 0
+    },
+    {
+        question: "What was Jesus’ first miracle?",
+        answers: ["Turning water into wine", "Feeding 5,000", "Walking on water", "Raising Lazarus"],
+        correct: 0
+    },
+    {
+        question: "Who betrayed Jesus for 30 pieces of silver?",
+        answers: ["Judas", "Peter", "John", "Paul"],
+        correct: 0
+    },
+    {
+        question: "In what city was Jesus born?",
+        answers: ["Bethlehem", "Nazareth", "Jerusalem", "Capernaum"],
+        correct: 0
+    },
+    {
+        question: "Who parted the Red Sea?",
+        answers: ["Moses", "Elijah", "Joshua", "Solomon"],
+        correct: 0
+    },
+    {
+        question: "What did God create on the first day?",
+        answers: ["Light", "Sky", "Land", "Animals"],
+        correct: 0
+    },
+    {
+        question: "How many apostles did Jesus have?",
+        answers: ["12", "10", "15", "7"],
+        correct: 0
+    },
+    {
+        question: "Who was thrown into the lions’ den?",
+        answers: ["Daniel", "David", "Moses", "Aaron"],
+        correct: 0
+    },
+    {
+        question: "Who was the first woman?",
+        answers: ["Eve", "Mary", "Sarah", "Ruth"],
+        correct: 0
+    },
+    {
+        question: "How many days did God take to create the world?",
+        answers: ["6", "7", "8", "9"],
+        correct: 0
+    },
+    {
+        question: "What is the second book of the Bible?",
+        answers: ["Exodus", "Genesis", "Leviticus", "Numbers"],
+        correct: 0
+    },
+    {
+        question: "Who was the strongest man in the Bible?",
+        answers: ["Samson", "David", "Solomon", "Paul"],
+        correct: 0
+    },
+    {
+        question: "Who was the mother of Jesus?",
+        answers: ["Mary", "Elizabeth", "Martha", "Ruth"],
+        correct: 0
+    },
+    {
+        question: "Which king of Israel was known for his wisdom?",
+        answers: ["Solomon", "David", "Saul", "Rehoboam"],
+        correct: 0
+    },
+    {
+        question: "Who killed Goliath?",
+        answers: ["David", "Saul", "Samson", "Elijah"],
+        correct: 0
+    },
+    {
+        question: "How many plagues did God send on Egypt?",
+        answers: ["10", "7", "12", "3"],
+        correct: 0
+    },
+    {
+        question: "What type of tree did Zacchaeus climb to see Jesus?",
+        answers: ["Sycamore", "Olive", "Fig", "Palm"],
+        correct: 0
+    },
+    {
+        question: "What was the name of the garden where Adam and Eve lived?",
+        answers: ["Eden", "Gethsemane", "Olive Grove", "Canaan"],
+        correct: 0
+    },
+    {
+        question: "How many brothers did Joseph have?",
+        answers: ["11", "10", "12", "9"],
+        correct: 0
+    },
+    {
+        question: "Who was the first king of Israel?",
+        answers: ["Saul", "David", "Solomon", "Samuel"],
+        correct: 0
+    },
+    {
+        question: "What was the name of Jesus' earthly father?",
+        answers: ["Joseph", "Abraham", "Isaac", "Jacob"],
+        correct: 0
+    },
+    {
+        question: "Who wrote most of the Psalms?",
+        answers: ["David", "Solomon", "Moses", "Isaiah"],
+        correct: 0
+    },
+    {
+        question: "How did Judas identify Jesus to the soldiers?",
+        answers: ["With a kiss", "With a hug", "With a wave", "With a handshake"],
+        correct: 0
+    },
+    {
+        question: "What did God do on the seventh day?",
+        answers: ["He rested", "He created humans", "He created animals", "He created plants"],
+        correct: 0
+    }
+];
+
+
+        let currentQuestionIndex = 0;
         let score = 0;
-        let timeLeft = 30; 
-        let timer;
-        const correctPin = "1111"; 
-
-        const questions = [
-          
-{ question: "Who is the author of the Gospel of John?",
-answers: ["Matthew", "Mark", "Luke", "John"],
-correct: 3,
-},
-
-{ question: "What is Jesus' message in the Sermon on the Mount?",
-answers: ["Love your enemies", "Honor your parents", "Obey the law", "Seek riches"],
-correct: 0,
-},
-
-{ question: "Which disciple denied Jesus three times?",
-answers: ["Peter", "John", "James", "Judas"],
-correct: 0,
- },
-
-{ question: "What is the name of the city where Jesus was born?",
-answers: ["Bethlehem", "Nazareth", "Jerusalem", "Capernaum"],
-correct: 0,
-},
-
-{ question: "Who sentenced Jesus to crucifixion?",
-answers: ["Pontius Pilate", "Herod", "Caiaphas", "Roman Senate"],
-correct: 0,
- },
-
-
-
-
-
-           
-            // Add more questions as needed
-        ];
-
-        const totalQuestions = questions.length;
-
-        function shuffleQuestions(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
-        }
-
-        shuffleQuestions(questions);
+        const questionElement = document.getElementById('question');
+        const answersElement = document.getElementById('answers');
+        const currentQuestionDisplay = document.getElementById('current-question');
 
         function loadQuestion() {
-            if (currentQuestion < totalQuestions) {
-                document.getElementById('question-box').innerText = questions[currentQuestion].question;
-                document.getElementById('question-image').src = questions[currentQuestion].image || "";
-              
-                
-                let answerBoxes = document.getElementsByClassName('answer-box');
-                for (let i = 0; i < answerBoxes.length; i++) {
-                    answerBoxes[i].innerText = questions[currentQuestion].answers[i];
-                }
+            const currentQuestion = questions[currentQuestionIndex];
+            questionElement.innerText = currentQuestion.question;
+            answersElement.innerHTML = '';
 
-                document.getElementById('current-question').innerText = currentQuestion + 1;
-                document.getElementById('total-questions').innerText = totalQuestions;
+            currentQuestion.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.innerText = answer;
+                button.onclick = () => selectAnswer(index);
+                answersElement.appendChild(button);
+            });
 
-                let progressPercentage = ((currentQuestion + 1) / totalQuestions) * 100;
-                document.getElementById('progress-bar-fill').style.width = progressPercentage + '%';
-
-                timeLeft = 30;
-                document.getElementById('time-left').innerText = timeLeft;
-                clearInterval(timer);
-                timer = setInterval(updateTimer, 1000);
-            } else {
-                displayResult();
-            }
+            currentQuestionDisplay.innerText = currentQuestionIndex + 1;
         }
 
-        function updateTimer() {
-            timeLeft--;
-            document.getElementById('time-left').innerText = timeLeft;
-            if (timeLeft <= 0) {
-                clearInterval(timer);
-                currentQuestion++;
+        function selectAnswer(selectedIndex) {
+            const isCorrect = selectedIndex === questions[currentQuestionIndex].correct;
+            score += isCorrect ? 1 : 0;
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < questions.length) {
                 loadQuestion();
+            } else {
+                showScore();
             }
         }
 
-        function checkAnswer(selectedAnswer) {
-            clearInterval(timer);
-            let answerBoxes = document.getElementsByClassName('answer-box');
-            let selectedIndex = Array.prototype.indexOf.call(answerBoxes, selectedAnswer);
+        function showScore() {
+            const passThreshold = questions.length * 0.8;
+            const scorePercentage = (score / questions.length) * 100;
+            document.getElementById('finalScore').innerText = `Your final score is: ${score} out of ${questions.length} (${scorePercentage.toFixed(2)}%)`;
 
-            if (selectedIndex === questions[currentQuestion].correct) {
-                score++;
+            if (score >= passThreshold) {
+                document.getElementById('modalMessage').innerText = "Congratulations! You've passed this level!";
+                document.getElementById('nextLevelBtn').classList.remove('hidden');
+                document.getElementById('adviceBtn').classList.add('hidden');
+            } else {
+                document.getElementById('modalMessage').innerText = "You didn't score well this time. Here's some advice to improve!";
+                document.getElementById('adviceBtn').classList.remove('hidden');
+                document.getElementById('nextLevelBtn').classList.add('hidden');
             }
 
-            currentQuestion++;
+            document.getElementById('scoreModal').style.display = 'flex';
+        }
+
+        // Retry button to reload the quiz
+        document.getElementById('retryBtn').addEventListener('click', () => {
+            document.getElementById('scoreModal').style.display = 'none';
+            currentQuestionIndex = 0;
+            score = 0;
             loadQuestion();
-        }
+        });
 
-        function displayResult() {
-            let quizContainer = document.getElementById('quiz-container');
-            quizContainer.innerHTML = `<h2 id="congratulations">Congratulations!</h2>
-                                       <h2>You scored ${score} out of ${totalQuestions}</h2>
-                                       <p>Well done! You've completed the quiz.</p>`;
+        // Advice button displays a simple message
+        document.getElementById('adviceBtn').addEventListener('click', () => {
+            alert("Study the Bible more, focus on the details, and you'll improve!");
+        });
 
-            if (score >= 2) {
-                quizContainer.innerHTML += `<button id="next-page-btn" onclick="goToNextPage()">Go to Next Page</button>`;
-            }
-        }
+        // Next level button
+        document.getElementById('nextLevelBtn').addEventListener('click', () => {
+            document.getElementById('scoreModal').style.display = 'none';
+            document.getElementById('nextLevelModal').style.display = 'flex';
+        });
 
-        function goToNextPage() {
-            window.location.href = "Level2.html"; // Replace with the actual next page URL
-        }
+        // Start next level button
+        document.getElementById('startNextLevelBtn').addEventListener('click', () => {
+            document.getElementById('nextLevelModal').style.display = 'none';
+            currentQuestionIndex = 0;
+            score = 0;
+            loadQuestion();
+        });
 
-        window.onload = loadQuestion;
+        loadQuestion();
     </script>
 </body>
 </html>
